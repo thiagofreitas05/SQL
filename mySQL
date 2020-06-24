@@ -1,0 +1,206 @@
+/* criando a base de dados */
+create database condominio;
+/* acessando a base */
+use condominio;
+
+
+/* criando a tabela condominio */
+create table condominio(
+   num integer not null auto_increment,
+   nome varchar(100) not null,
+   endereco varchar(200) not null,
+   tipo char(1),
+   
+   constraint pk_cond primary key (num)
+);
+
+/* criando a tabela cliente */
+create table cliente(
+   idcli integer not null auto_increment,
+   nome varchar(80),
+   email varchar(100) unique,
+   telefone varchar(20) unique,
+   constraint pk_cli primary key (idcli)
+);
+
+
+/* criando a tabela unidade condominial */
+create table unidade(
+   iduni integer not null auto_increment,
+   numero integer not null,
+   complemento varchar(30),
+   valorCondominio float,
+   valorAluguel float,
+   num integer not null,
+   idcli integer not null,
+   
+   constraint pk_unidade  primary key (iduni),
+   constraint fk_cond_uni foreign key (num)   references condominio(num),
+   constraint fk_cli_uni  foreign key (idcli) references cliente(idcli)
+);
+
+/* criando a tabela do aluguel da unidade pelo cliente */
+create table aluguel(
+   numcontrato integer not null auto_increment,
+   idcli integer not null,
+   iduni integer not null,
+   inicioVigencia date,
+   fimVigencia    date,
+   valorEfetivo   float,
+   
+   constraint pk_aluguel primary key (numcontrato),
+   constraint fk_aluguel_cli foreign key (idcli) references cliente (idcli),
+   constraint fk_aluguel_uni foreign key (iduni) references unidade (iduni)
+);
+
+/* mostro as tabelas criadas */
+show tables;
+
+
+/* quero conhecer a estrutura de uma tabela */
+desc aluguel;
+
+/* DATA MANIPULATION LANGUAGE DML */
+/* inserindo alguns dados de testes */
+insert into condominio (nome, endereco, tipo) values ('Vila das Flores', 'Rua I, 30' ,'C' );
+insert into condominio values (null,'Sapore del Pasta','Rua II, 50','A');
+insert into condominio values (null,'Oz Business Center', 'Av. dos Autonomistas 1000', 'E');
+
+/* recuperando as informacoes das tabelas */
+select * from condominio;
+
+/* inserindo clientes */
+/*1*/insert into cliente values (null, 'Professor Isidro', 'isidro@isidro.com','98765-4321');
+/*2*/insert into cliente values (null, 'Ze das Couves','ze@ze.com','98888-7777');
+/*3*/insert into cliente values (null, 'Carina das Pitanga','carina@carina.com','97777-6666');
+/*4*/insert into cliente values (null, 'Jao do Caxao','jao@jao.com','91111-1111');
+/*5*/insert into cliente values (null, 'Chico da Tiana','chico@chico.com','90000-1111');
+/*6*/insert into cliente values (null, 'Pedro da Pedra','pedro@pedro.com','95432-1098');
+/*7*/insert into cliente values (null, 'Andre dos Pe','andre@andre.com','95555-4444');
+select * from cliente;
+
+/* inserindo dados na tabela de unidades */
+/*01*/insert into unidade values(null, 10, null, 500, 0, 1,1); 
+/*02*/insert into unidade values(null, 20, null, 500, 0, 1,2);
+
+/*03*/insert into unidade values(null, 101, 'Bloco A', 800, 0, 2,3);
+/*04*/insert into unidade values(null, 102, 'Bloco A', 800, 0, 2,4);
+/*05*/insert into unidade values(null, 103, 'Bloco A', 800, 0, 2,5);
+/*06*/insert into unidade values(null, 104, 'Bloco A', 800, 1000, 2,2);
+
+/*07*/insert into unidade values(null, 1001, 'Torre Nasdaq', 600, 900, 3,1);
+/*08*/insert into unidade values(null, 1002, 'Torre Nasdaq', 600, 900, 3,2);
+/*09*/insert into unidade values(null, 1003, 'Torre Nasdaq', 600, 900, 3,2);
+/*10*/insert into unidade values(null, 1004, 'Torre Nasdaq', 600, 900, 3,3);
+
+
+/* inserindo alguns alugueis */
+insert into aluguel values (null, 6, 6, '2020-01-01','2020-12-31', 750);
+insert into aluguel values (null, 6, 7, '2020-01-01','2020-12-31', 850);
+insert into aluguel values (null, 7, 8, '2020-01-01','2020-12-31', 900);
+/* quem sao meus clientes */
+select * from cliente;
+
+/* quem sao meus clientes em ordem alfabetica */
+select * from cliente order by nome asc;
+
+/* quero os detalhes do cliente de id = 1 */
+select * from cliente where idcli = 1;
+
+/* quero os detalhes do cliente de nome 'Professor Isidro' */
+select * from cliente where nome = 'Professor';
+
+/* quero os clientes de nomes que iniciam com a letra C */
+select * from cliente where nome LIKE '%c%';
+
+/* quantas unidades condominiais eu tenho cadastrados */
+select count(iduni) from unidade;
+
+/* quantas unidades condominiais estao para aluguel? */
+select count(iduni) from unidade where valorAluguel != 0;
+
+/* quais sao essas unidades ? */
+select * from unidade where valorAluguel != 0;
+
+
+/* quero saber quais sao as unidades e seus respectivos condominios */
+select * from 
+    unidade inner join condominio on unidade.num = condominio.num;
+
+/* quero saber quais sao as unidades e seus respectivos proprietarios */
+select * from
+    unidade inner join cliente on unidade.idcli = cliente.idcli;
+    
+/* quero saber quem e a unidade, seu condominio e o dono */
+select * from
+    unidade inner join condominio on unidade.num = condominio.num
+            inner join cliente    on unidade.idcli = cliente.idcli;
+            
+            
+/* quero saber o item anterior ordenado pelo nome do cliente */
+select * from
+    unidade inner join condominio on unidade.num = condominio.num
+            inner join cliente    on unidade.idcli = cliente.idcli
+	order by cliente.nome;
+    
+/* quero saber so as unidades do isidro - baseado no exemplo acima */
+select * from
+    unidade inner join condominio on unidade.num = condominio.num
+            inner join cliente    on unidade.idcli = cliente.idcli
+	where cliente.idcli = 1;
+
+
+/* quem aluga o que de quem por quanto e durante quanto tempo? */
+select aluguel.numcontrato     as 'Numero do Contrato',
+       inquilino.nome          as 'Inquilino' ,
+       unidade.numero          as 'Unidade' ,
+       unidade.complemento     as 'Complemento',
+       condominio.nome         as 'Nome Condominio',
+       unidade.valorCondominio as 'Valor Do Condominio R$',
+       unidade.valorAluguel    as 'Valor do Aluguel R$' ,
+       aluguel.valorEfetivo    as 'Valor Negociado R$' ,
+       date_format(aluguel.inicioVigencia,'%d/%m/%Y') as 'Inicio' ,
+       date_format(aluguel.fimVigencia,'%d/%m/%Y')    as 'Fim',
+       proprietario.nome       as 'Proprietario'
+       
+       from aluguel
+       inner join cliente as inquilino on aluguel.idcli = inquilino.idcli
+       inner join unidade              on aluguel.iduni = unidade.iduni
+       inner join condominio           on unidade.num = condominio.num
+       inner join cliente as proprietario on unidade.idcli = proprietario.idcli ;
+
+
+/* quais unidades estao alugadas hoje? */
+select * from aluguel where
+    inicioVigencia < date(now()) and fimVigencia > date(now());
+    
+    
+/* quais unidades estao sem alugar hoje ? */
+/* como eu penso nesse problema? 
+   1 - consigo saber quais unidades 'alugaveis'? - aquelas de valorAluguel != 0
+   2 - a tabela aluguel me mostra quais unidades estao em aluguel e eu consigo
+       saber a vigencia - consulta acima
+   3 - posso ver, de todas as unidades, quais nao estao em alguel de vigencia
+*/
+
+select * from unidade where
+	  valorAluguel != 0 
+      and
+      iduni not in (select iduni from aluguel where
+                    inicioVigencia < date(now()) 
+				    and fimVigencia > date(now()));
+                    
+
+	
+/* outra maneira de se descobrir quais sao as unidades disponiveis */
+
+select * 
+        from unidade left outer join aluguel 
+        on unidade.iduni = aluguel.iduni
+        where valorAluguel != 0 and
+        (fimVigencia < date(now()) or fimVigencia is null);
+
+/* mudei a vigencia de um contrato - antecipei o fim 
+update aluguel set fimVigencia = '2020-05-31' where numcontrato = 1;
+*/
+
